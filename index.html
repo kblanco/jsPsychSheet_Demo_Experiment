@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>PLT_demo_v1</title>
+    <script src="https://unpkg.com/jspsych@7.3.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.1"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-survey-text@1.1.1"></script>
+    <link href="https://unpkg.com/jspsych@7.3.0/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <script src="https://brain2ai.github.io/jsPsychSheet/jspsychsheet.js"></script>
+    <link rel="stylesheet" href="https://brain2ai.github.io/jsPsychSheet/jspsychsheet.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  </head>
+  <body></body>
+  <script>
+    var jsPsych = initJsPsych({
+        on_finish: function() {
+            url = "https://script.google.com/macros/s/AKfycbzZhKuT_QuQHIX-KIET1j2cDwr-Iqa6KraRfVIQBgHt9Z9KL6z5hXNEtYgFgVEmWPbz/exec";
+    jsPsychSheet.uploadData(url, jsPsych.data.get().csv())
+        }
+    });
+
+
+
+    
+    var groups = {
+        "first": [{"word": "cosmos"}, {"word": "selva"}, {"word": "humano"}, {"word": "planta"}, {"word": "mar"}, {"word": "campesino"}, {"word": "aire"}, {"word": "animal"}, {"word": "desierto"}, {"word": "atmósfera"}],
+        "second": [{"word": "genética"}, {"word": "biología"}, {"word": "ambiente"}, {"word": "paisaje"}, {"word": "bosque"}, {"word": "ave"}, {"word": "lago"}, {"word": "conservación"}, {"word": "agricultura"}, {"word": "planeta"}],
+        "third": [{"word": "excursión"}, {"word": "campamento"}, {"word": "tierra"}, {"word": "jardín"}, {"word": "mundo"}, {"word": "clima"}, {"word": "fauna"}, {"word": "vegetación"}, {"word": "universo"}, {"word": "instinto"}],
+    }
+
+    var id = "S0021_1"
+    var subject = "2"
+
+    if (subject == "1" || subject == "2") {
+        var selected_group = "first"
+    } else if (subject == "3" || subject == "4") {
+        var selected_group = "second"
+    } else if (subject == "5" || subject == "6") {
+        var selected_group = "third"
+    }
+    
+
+    var timeline = [];
+
+    var consent = {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: "<p>Consentimiento informado.</p><p>Presiona Enter</p>",
+      choices: ['Enter']
+    };
+    timeline.push(consent);
+
+    var instructions = {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: function() {
+                    if (subject === "1" || subject === "3" || subject === "5") {
+                        return '<p>En este estudio te pediremos que nos des una lista de cosas</p><p>que son típicamente ciertas de las cosas que te vamos a mencionar</p><p>Presiona Enter</p>';
+                    } else {
+                        return '<p>En este estudio te pediremos que nos des una lista de cosas</p><p>que son típicamente ciertas de las cosas que te vamos a mencionar,</p><p>cuando piensas en ellas en determinado contexto</p><p>Presiona Enter</p>';
+                    }
+                }
+        };
+    timeline.push(instructions);
+
+
+    var loop_node = {
+        timeline: [
+            {
+                type: jsPsychSurveyText,
+                preamble: function() {
+                    if (subject === "1" || subject === "3" || subject === "5") {
+                        return '<p>Qué cosas son típicamente ciertas de: </p>';
+                    } else {
+                        return '<p>En el contexto de naturaleza, qué cosas son típicamente ciertas de: </p>';
+                    }
+                },
+                questions: [{prompt: jsPsych.timelineVariable('word')}],
+                data: {
+                    concept: jsPsych.timelineVariable('word')
+                }     
+            }
+        ],
+        loop_function: function(data){
+            if( data.values()[0].response["Q0"] === "next" ){
+                return false;
+            } else {
+                return true;
+            }
+        }
+    }
+
+    var test_procedure1 = {
+        timeline: [loop_node],
+        timeline_variables: groups[selected_group],
+        randomize_order: true,
+        conditional_function: function(data){
+            if( selected_group === "first" ){
+                return true;
+            } else {
+                return false;
+            }
+        }
+    };
+    timeline.push(test_procedure1);
+
+    var test_procedure2 = {
+        timeline: [loop_node],
+        timeline_variables: groups[selected_group],
+        randomize_order: true,
+        conditional_function: function(data){
+            if( selected_group === "second" ){
+                return true;
+            } else {
+                return false;
+            }
+        }
+    };
+    timeline.push(test_procedure2);
+
+    var test_procedure3 = {
+        timeline: [loop_node],
+        timeline_variables: groups[selected_group],
+        randomize_order: true,
+        conditional_function: function(data){
+            if( selected_group === "third" ){
+                return true;
+            } else {
+                return false;
+            }
+        }
+    };
+    timeline.push(test_procedure3);
+
+    var thanks = {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: `<p>Thanks!
+    </p><p>Press ESC</p>`,
+      choices: ['Escape']
+    };
+    timeline.push(thanks);
+
+    jsPsych.run(timeline);
+  </script>
+</html>
